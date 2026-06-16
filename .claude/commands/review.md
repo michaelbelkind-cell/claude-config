@@ -22,7 +22,7 @@ NON-NEGOTIABLE. Zero exceptions.
 Run the correct linter for the active repo:
 - portal-v2:     `npm run lint`
 - portal-v2-bff: `npm run lint`
-- rms-client:    `npx eslint src/`
+- rms-client:    `npx eslint "src/**/*.{ts,tsx}"`
 - shopify-app:   `./vendor/bin/tlint`
 - automation:    no linter — skip this step
 
