@@ -29,33 +29,33 @@ You are STRICTLY FORBIDDEN from running any test or making any changes until:
 ## Running Tests
 
 ### Run a single test
-\`\`\`bash
+```bash
 pytest tests/test_file.py::test_function_name -v
-\`\`\`
+```
 
 ### Run a full suite
-\`\`\`bash
+```bash
 pytest tests/ -v
-\`\`\`
+```
 
 ### Run with specific markers
-\`\`\`bash
+```bash
 pytest -m "marker_name" -v
-\`\`\`
+```
 
 ---
 
 ## CRITICAL PROTOCOL: TEST WRITING RULES
 
 - Every test MUST be independent — no test should depend on another
-- Test naming is MANDATORY: \`test_[what_it_tests]\` (e.g. \`test_return_flow_success\`)
+- Test naming is MANDATORY: `test_[what_it_tests]` (e.g. `test_return_flow_success`)
 - Each test MUST have a clear docstring explaining:
   - What it tests
   - Which API it calls
   - Expected outcome
 - It is STRICTLY PROHIBITED to hardcode credentials or API keys in test files
-- All sensitive config MUST go in environment variables or a \`.env\` file
-- \`.env\` files are STRICTLY PROHIBITED from being committed to git
+- All sensitive config MUST go in environment variables or a `.env` file
+- `.env` files are STRICTLY PROHIBITED from being committed to git
 
 ---
 
@@ -73,7 +73,7 @@ pytest -m "marker_name" -v
 1. Run the full test suite — MANDATORY
 2. All existing tests MUST still pass — no regressions allowed
 3. New tests MUST be reviewed before merging
-4. Commit message format: \`test: description\` (e.g. \`test: add return flow scenario\`)
+4. Commit message format: `test: description` (e.g. `test: add return flow scenario`)
 
 ---
 
