@@ -1,3 +1,8 @@
+---
+name: automation
+description: Context and mandatory protocols for the RGO automation repo (pytest end-to-end API tests). Use when working in the automation repository — covers pre-test git checks, environment selection (staging vs production), test-writing rules, and external API safety.
+---
+
 # Skill: Automation Repo
 
 ## Identity & Context
