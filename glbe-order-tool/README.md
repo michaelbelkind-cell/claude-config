@@ -145,14 +145,20 @@ Add the QA secrets under **Settings → Secrets and variables → Actions**:
 - `GLBE_AUTH_TOKEN`
 - `GLBE_API_KEY`
 
-### Runner choice
+### Runner choice — ⚠️ you must use a self-hosted runner
 
-Each run has a `runner` input:
+The order-creation service (`automation-order-creation-qa.bglobale.com`) lives
+behind an **internal gateway on a private 10.x address**, so **GitHub-hosted
+runners cannot reach it** (order creation fails with `fetch failed`). Only
+`connect-qa.bglobale.com` is public (Cloudflare), which is why merchant lookups
+succeed but order creation does not on hosted runners.
 
-- `ubuntu-latest` (default) — zero setup, but **capped at 6h/job** and must be able
-  to reach the QA hosts from the public internet. Fine for small/medium runs.
-- `self-hosted` — **required for very large runs (e.g. 50k)**: no 6h limit, and it
-  can reach QA if QA is internal-only. Register a self-hosted runner first.
+- `ubuntu-latest` — ❌ will fail at the Template/Orders step (no route to 10.x).
+- `self-hosted` — ✅ **required.** Register a runner on a machine with corp
+  network / VPN access to `10.32.x.x` (and outbound internet for checkout/npm).
+  Also avoids the hosted 6h job cap, so it's needed for 50k regardless.
+
+Set the workflow's `runner` input to `self-hosted` when dispatching.
 
 ### Two-phase for big runs
 
