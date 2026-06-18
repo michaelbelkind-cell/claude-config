@@ -61,9 +61,17 @@ async function main() {
   const [command, ...rest] = process.argv.slice(2);
   const args = parseArgs(rest);
 
-  if (!command || args.help) {
+  const wantsHelp = ['help', '--help', '-h'].includes(command) || args.help;
+  if (!command || wantsHelp) {
     console.log(USAGE);
-    process.exit(command ? 0 : 1);
+    process.exit(wantsHelp ? 0 : 1);
+  }
+
+  const KNOWN_COMMANDS = ['create-orders', 'create-returns'];
+  if (!KNOWN_COMMANDS.includes(command)) {
+    console.error(`Unknown command: ${command}`);
+    console.log(USAGE);
+    process.exit(1);
   }
 
   const config = loadConfig();
@@ -110,10 +118,6 @@ async function main() {
     const merchantGuid = await getMerchantGuid(config, merchantId);
 
     await returnOrders(config, { merchantGuid, orderIds, productCode, email: args.email });
-  } else {
-    console.error(`Unknown command: ${command}`);
-    console.log(USAGE);
-    process.exit(1);
   }
 }
 
