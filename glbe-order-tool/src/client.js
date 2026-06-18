@@ -29,6 +29,10 @@ export async function request(method, url, { headers = {}, body } = {}) {
   }
 
   console.log(`← [${id}] ${res.status} OK`);
+  if (process.env.GLBE_DEBUG === 'true') {
+    const snippet = typeof data === 'string' ? data : JSON.stringify(data);
+    console.log(`    data: ${(snippet || '(empty)').slice(0, 300)}`);
+  }
   return data;
 }
 

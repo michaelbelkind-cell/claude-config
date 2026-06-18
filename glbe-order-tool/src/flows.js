@@ -55,9 +55,11 @@ export async function returnOrders(config, { merchantGuid, orderIds, productCode
   const results = [];
   for (const orderId of orderIds) {
     try {
-      await steps.createReturn(config, { orderId, productCode, merchantGuid, email });
-      results.push({ orderId, ok: true });
-      console.log(`✓ return for order ${orderId}`);
+      const resp = await steps.createReturn(config, { orderId, productCode, merchantGuid, email });
+      const rmaNumber = resp?.Data?.GlobaleRmaNumber;
+      const tracking = resp?.Data?.ReturnTrackingDetails?.TrackingNumber;
+      results.push({ orderId, ok: true, rmaNumber, tracking });
+      console.log(`✓ return for order ${orderId}${rmaNumber ? ` (RMA ${rmaNumber})` : ''}`);
     } catch (err) {
       results.push({ orderId, ok: false, error: err.message });
       console.error(`✗ return for order ${orderId}: ${err.message}`);

@@ -39,6 +39,12 @@ Create 5 orders for merchant 275:
 node bin/cli.js create-orders --merchant 275 --product 701644329402M --count 5
 ```
 
+Different ordered vs delivery quantity:
+
+```bash
+node bin/cli.js create-orders --merchant 524 --product 701644329402M --ordered-qty 2 --delivery-qty 1
+```
+
 Create 3 orders and immediately return each:
 
 ```bash
@@ -52,6 +58,19 @@ node bin/cli.js create-returns --merchant 275 --product 701644329402M --orders 1
 ```
 
 Run with no command (or `--help`) to see all options.
+
+## Results / output
+
+Every run records the orders (and any returns) it created to `results/`:
+
+- `created-orders.csv` — open in Excel/Sheets; one row per order
+- `created-orders.json` — accumulating array for programmatic use
+
+Columns: `timestamp, env, merchantId, merchantGuid, productCode, country,
+orderedQuantity, deliveryQuantity, orderId, returned, rmaNumber, rmaTracking`.
+
+> `results/` is gitignored (per-run local test data). If the team wants a single
+> shared record, remove `results/` from `.gitignore`.
 
 ## Environments
 
@@ -72,6 +91,10 @@ data/payloadTemplate.js parameterized /Template cart payload
 
 ## Known caveats
 
-- Some constants in `data/payloadTemplate.js` (`rateData`, `MerchantCartHash`,
-  WebStore codes) were captured from a single QA cart and may be merchant- or
-  session-specific. Revisit if order creation starts failing.
+- `WebStoreCode`, `WebStoreInstanceCode` (zymi), `rateData` and `MerchantCartHash`
+  were tested against QA and found **not required** for order creation, so they
+  were removed from the payload. Verified with merchants 275 and 524 (both on the
+  `zymi-007` QA store). A merchant on a different store may need store-specific
+  fields reintroduced as parameters.
+- Other `data/payloadTemplate.js` defaults (categories, attributes, prices) come
+  from one sample product; override via `buildTemplatePayload` options if needed.

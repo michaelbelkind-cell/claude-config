@@ -2,9 +2,9 @@
 // request. Only the fields a caller is likely to vary are parameterized; the
 // rest are sensible QA defaults lifted from the original collection.
 //
-// NOTE: some constants below (rateData, MerchantCartHash, WebStore codes) came
-// from a single captured QA cart. They may be merchant/session specific — revisit
-// if order creation starts rejecting them.
+// NOTE: WebStoreCode, WebStoreInstanceCode (zymi), rateData and MerchantCartHash
+// were tested against QA and found NOT required for order creation, so they were
+// removed. If a future merchant/store needs them, reintroduce as parameters.
 
 export function buildTemplatePayload({
   merchantId,
@@ -127,7 +127,6 @@ export function buildTemplatePayload({
       ],
       CartToken: null,
       MerchantCartToken: 'ebb755feb249f6a7ccdb24f7bb',
-      MerchantCartHash: 'QIG79EXk0sVCbZZUE7wYWUNLaPWbFalytYsvDNk/fIc=',
       MerchantCartSnapShot: JSON.stringify({
         products: [{ position: '1', pid: productCode, qty: orderedQuantity }],
       }),
@@ -175,9 +174,6 @@ export function buildTemplatePayload({
       },
       VoucherData: null,
       LoyaltyData: null,
-      rateData: '2et%2bc1mHFPISKf3TJ8CsYjuMCgdFC%2buEiWJUT56YaEs%3d',
-      WebStoreCode: 'SFRA-USD-QA-275',
-      WebStoreInstanceCode: 'zymi-007.dx.commercecloud.salesforce.com',
       LoyaltyPoints: null,
       AllowMailsFromMerchant: false,
       AllowDirectCommunicationFromMerchant: false,
