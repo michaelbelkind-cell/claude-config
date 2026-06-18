@@ -1,5 +1,6 @@
 node_modules/
 .env
 *.local
-results/
 *.log
+
+# results/ is intentionally tracked so the team can download created orders.

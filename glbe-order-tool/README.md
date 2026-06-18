@@ -33,22 +33,30 @@ cp .env.example .env   # then fill in GLBE_AUTH_TOKEN and GLBE_API_KEY
 
 ## Usage
 
-Create 5 orders for merchant 275:
+The tool runs in **two modes**:
+
+### Mode 1 — orders only (no RMA)
+
+Runs the order lifecycle through "delivered" and never calls the Return API.
 
 ```bash
 node bin/cli.js create-orders --merchant 275 --product 701644329402M --count 5
 ```
 
+### Mode 2 — orders + RMA
+
+Same as above, then creates a return (RMA) for each successful order.
+
+```bash
+node bin/cli.js create-orders --merchant 275 --product 701644329402M --count 3 --with-returns
+```
+
+### Other examples
+
 Different ordered vs delivery quantity:
 
 ```bash
 node bin/cli.js create-orders --merchant 524 --product 701644329402M --ordered-qty 2 --delivery-qty 1
-```
-
-Create 3 orders and immediately return each:
-
-```bash
-node bin/cli.js create-orders --merchant 275 --product 701644329402M --count 3 --with-returns
 ```
 
 Create returns for specific existing orders:
@@ -69,8 +77,9 @@ Every run records the orders (and any returns) it created to `results/`:
 Columns: `timestamp, env, merchantId, merchantGuid, productCode, country,
 orderedQuantity, deliveryQuantity, orderId, returned, rmaNumber, rmaTracking`.
 
-> `results/` is gitignored (per-run local test data). If the team wants a single
-> shared record, remove `results/` from `.gitignore`.
+`results/` **is committed to git** so the whole team can download/copy the file
+(e.g. from GitHub → `results/created-orders.csv` → Raw / Download). The files
+accumulate across runs; clear them if they get too large.
 
 ## Environments
 
