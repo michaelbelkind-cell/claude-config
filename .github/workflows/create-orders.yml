@@ -1,0 +1,93 @@
+name: Create Orders (GLBE)
+
+# On-demand bulk order creation. Run from the Actions tab → "Run workflow".
+on:
+  workflow_dispatch:
+    inputs:
+      merchant:
+        description: Merchant ID (e.g. 524)
+        required: true
+      product:
+        description: Product code
+        required: true
+        default: '701644329402M'
+      count:
+        description: Number of orders to create
+        required: true
+        default: '1'
+      qty:
+        description: Quantity per order (ordered & delivery)
+        required: false
+        default: '1'
+      concurrency:
+        description: Parallel workers (try 10-20; tune to what QA tolerates)
+        required: false
+        default: '10'
+      country:
+        description: Destination country code
+        required: false
+        default: 'DE'
+      with_returns:
+        description: Also create a return (RMA) for each order (slow; prefer the returns workflow for big runs)
+        type: boolean
+        default: false
+      runner:
+        description: Runner to use (self-hosted has no 6h limit — required for very large runs)
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+        default: ubuntu-latest
+      timeout_minutes:
+        description: Job timeout in minutes (hosted is capped at 360)
+        required: false
+        default: '350'
+
+jobs:
+  create-orders:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ fromJSON(inputs.timeout_minutes) }}
+    defaults:
+      run:
+        working-directory: glbe-order-tool
+    env:
+      GLBE_ENV: qa
+      GLBE_AUTH_TOKEN: ${{ secrets.GLBE_AUTH_TOKEN }}
+      GLBE_API_KEY: ${{ secrets.GLBE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      - name: Create orders
+        env:
+          IN_MERCHANT: ${{ inputs.merchant }}
+          IN_PRODUCT: ${{ inputs.product }}
+          IN_COUNT: ${{ inputs.count }}
+          IN_QTY: ${{ inputs.qty }}
+          IN_CONCURRENCY: ${{ inputs.concurrency }}
+          IN_COUNTRY: ${{ inputs.country }}
+          IN_WITH_RETURNS: ${{ inputs.with_returns }}
+        run: |
+          EXTRA=""
+          if [ "$IN_WITH_RETURNS" = "true" ]; then EXTRA="--with-returns"; fi
+          node bin/cli.js create-orders \
+            --merchant "$IN_MERCHANT" \
+            --product "$IN_PRODUCT" \
+            --count "$IN_COUNT" \
+            --qty "$IN_QTY" \
+            --concurrency "$IN_CONCURRENCY" \
+            --country "$IN_COUNTRY" \
+            $EXTRA
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: created-orders-${{ github.run_id }}
+          path: glbe-order-tool/results/
+          if-no-files-found: warn

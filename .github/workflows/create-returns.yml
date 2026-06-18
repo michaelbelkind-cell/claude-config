@@ -1,0 +1,109 @@
+name: Create Returns (GLBE)
+
+# On-demand RMA/return creation. Two ways to supply orders:
+#   - orders:        explicit comma-separated order IDs, or
+#   - from_results:  return all pending orders from a prior create-orders run
+#                    (set orders_run_id to pull that run's results artifact).
+on:
+  workflow_dispatch:
+    inputs:
+      merchant:
+        description: Merchant ID (e.g. 524)
+        required: true
+      product:
+        description: Product code
+        required: true
+        default: '701644329402M'
+      orders:
+        description: Comma-separated order IDs (leave blank to use from_results)
+        required: false
+      from_results:
+        description: Return all pending orders from the results file
+        type: boolean
+        default: false
+      orders_run_id:
+        description: create-orders run ID whose results artifact to pull (for from_results across runs)
+        required: false
+      concurrency:
+        description: Parallel workers
+        required: false
+        default: '10'
+      runner:
+        description: Runner to use
+        type: choice
+        options:
+          - ubuntu-latest
+          - self-hosted
+        default: ubuntu-latest
+      timeout_minutes:
+        description: Job timeout in minutes (hosted is capped at 360)
+        required: false
+        default: '350'
+
+permissions:
+  actions: read       # needed to download an artifact from another run
+  contents: read
+
+jobs:
+  create-returns:
+    runs-on: ${{ inputs.runner }}
+    timeout-minutes: ${{ fromJSON(inputs.timeout_minutes) }}
+    defaults:
+      run:
+        working-directory: glbe-order-tool
+    env:
+      GLBE_ENV: qa
+      GLBE_AUTH_TOKEN: ${{ secrets.GLBE_AUTH_TOKEN }}
+      GLBE_API_KEY: ${{ secrets.GLBE_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+
+      # Optional: pull the results artifact from a prior create-orders run so
+      # --from-results can see those orders (results are not committed to the repo).
+      - name: Download prior orders results
+        if: ${{ inputs.orders_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: created-orders-${{ inputs.orders_run_id }}
+          path: glbe-order-tool/results
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ inputs.orders_run_id }}
+
+      - name: Create returns
+        env:
+          IN_MERCHANT: ${{ inputs.merchant }}
+          IN_PRODUCT: ${{ inputs.product }}
+          IN_ORDERS: ${{ inputs.orders }}
+          IN_FROM_RESULTS: ${{ inputs.from_results }}
+          IN_CONCURRENCY: ${{ inputs.concurrency }}
+        run: |
+          if [ "$IN_FROM_RESULTS" = "true" ]; then
+            node bin/cli.js create-returns \
+              --merchant "$IN_MERCHANT" \
+              --product "$IN_PRODUCT" \
+              --from-results \
+              --concurrency "$IN_CONCURRENCY"
+          elif [ -n "$IN_ORDERS" ]; then
+            node bin/cli.js create-returns \
+              --merchant "$IN_MERCHANT" \
+              --product "$IN_PRODUCT" \
+              --orders "$IN_ORDERS" \
+              --concurrency "$IN_CONCURRENCY"
+          else
+            echo "Provide 'orders' (comma-separated IDs) or enable 'from_results'." >&2
+            exit 1
+          fi
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: created-returns-${{ github.run_id }}
+          path: glbe-order-tool/results/
+          if-no-files-found: warn

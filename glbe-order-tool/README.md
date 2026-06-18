@@ -128,6 +128,39 @@ src/flows.js            createSingleOrder / createBulkOrders / returnOrders
 data/payloadTemplate.js parameterized /Template cart payload
 ```
 
+## Running via GitHub Actions (on-demand)
+
+Two `workflow_dispatch` workflows live in `.github/workflows/`:
+
+- **Create Orders (GLBE)** — bulk order creation
+- **Create Returns (GLBE)** — RMA creation (explicit IDs or `from_results`)
+
+Run them from the repo's **Actions** tab → pick the workflow → **Run workflow** →
+fill the inputs. Results are uploaded as a downloadable **artifact** on each run.
+
+### One-time setup (required)
+
+Add the QA secrets under **Settings → Secrets and variables → Actions**:
+
+- `GLBE_AUTH_TOKEN`
+- `GLBE_API_KEY`
+
+### Runner choice
+
+Each run has a `runner` input:
+
+- `ubuntu-latest` (default) — zero setup, but **capped at 6h/job** and must be able
+  to reach the QA hosts from the public internet. Fine for small/medium runs.
+- `self-hosted` — **required for very large runs (e.g. 50k)**: no 6h limit, and it
+  can reach QA if QA is internal-only. Register a self-hosted runner first.
+
+### Two-phase for big runs
+
+1. Run **Create Orders** (e.g. count 50000, no returns).
+2. Run **Create Returns** with `from_results: true` and `orders_run_id` set to the
+   create-orders run's ID — it pulls that run's results artifact and returns all
+   pending orders. Re-run until nothing is pending.
+
 ## Known caveats
 
 - `WebStoreCode`, `WebStoreInstanceCode` (zymi), `rateData` and `MerchantCartHash`
