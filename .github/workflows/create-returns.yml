@@ -32,12 +32,12 @@ on:
         required: false
         default: '10'
       runner:
-        description: Runner to use
+        description: Runner — MUST be self-hosted (QA is on a private 10.x network; hosted runners cannot reach it)
         type: choice
         options:
-          - ubuntu-latest
           - self-hosted
-        default: ubuntu-latest
+          - ubuntu-latest
+        default: self-hosted
       timeout_minutes:
         description: Job timeout in minutes (hosted is capped at 360)
         required: false
