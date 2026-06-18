@@ -113,6 +113,18 @@ async function main() {
     else if (record.returned) tally.returnsOk++;
   };
 
+  // Print failure reasons to the log (deduped so a big run isn't flooded).
+  const seenErrors = new Map();
+  const logFailure = (record) => {
+    const msg = record.error || record.returnError;
+    if (!msg) return;
+    const key = msg.slice(0, 120);
+    const n = (seenErrors.get(key) || 0) + 1;
+    seenErrors.set(key, n);
+    if (n <= 5) console.error(`✗ ${record.orderId || '(order failed)'}: ${msg.slice(0, 400)}`);
+    else if (n === 6) console.error(`  …(further identical errors suppressed)`);
+  };
+
   // Graceful shutdown: first Ctrl+C stops launching new work; second forces exit.
   const controller = new AbortController();
   let interrupted = false;
@@ -143,6 +155,7 @@ async function main() {
     const onResult = (record) => {
       appendResult(record);
       trackReturns(record);
+      logFailure(record);
       progress.update(record);
     };
 
@@ -200,6 +213,7 @@ async function main() {
     const progress = createProgress(orderIds.length);
     const onResult = (record) => {
       appendResult(record);
+      logFailure(record);
       progress.update(record);
     };
 
