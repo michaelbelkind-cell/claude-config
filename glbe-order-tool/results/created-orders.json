@@ -24,5 +24,47 @@
     "deliveryQuantity": 1,
     "orderId": "GE767592332TS",
     "returned": false
+  },
+  {
+    "timestamp": "2026-06-18T14:21:36.730Z",
+    "env": "qa",
+    "merchantId": "524",
+    "merchantGuid": "7E8729FD-49E1-49BE-BE5A-18A02B89895E",
+    "productCode": "701644329402M",
+    "country": "DE",
+    "orderedQuantity": 1,
+    "deliveryQuantity": 1,
+    "orderId": "GE767593302TS",
+    "returned": true,
+    "rmaNumber": "589526",
+    "rmaTracking": "9824451092"
+  },
+  {
+    "timestamp": "2026-06-18T14:21:36.738Z",
+    "env": "qa",
+    "merchantId": "524",
+    "merchantGuid": "7E8729FD-49E1-49BE-BE5A-18A02B89895E",
+    "productCode": "701644329402M",
+    "country": "DE",
+    "orderedQuantity": 1,
+    "deliveryQuantity": 1,
+    "orderId": "GE767594078TS",
+    "returned": true,
+    "rmaNumber": "589527",
+    "rmaTracking": "9824451103"
+  },
+  {
+    "timestamp": "2026-06-18T14:21:36.738Z",
+    "env": "qa",
+    "merchantId": "524",
+    "merchantGuid": "7E8729FD-49E1-49BE-BE5A-18A02B89895E",
+    "productCode": "701644329402M",
+    "country": "DE",
+    "orderedQuantity": 1,
+    "deliveryQuantity": 1,
+    "orderId": "GE767595436TS",
+    "returned": true,
+    "rmaNumber": "589528",
+    "rmaTracking": "9824451114"
   }
 ]
