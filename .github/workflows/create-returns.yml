@@ -10,6 +10,7 @@ on:
       merchant:
         description: Merchant ID (e.g. 524)
         required: true
+        default: '524'
       product:
         description: Product code
         required: true
@@ -17,6 +18,7 @@ on:
       orders:
         description: Comma-separated order IDs (leave blank to use from_results)
         required: false
+        default: ''
       from_results:
         description: Return all pending orders from the results file
         type: boolean
@@ -24,6 +26,7 @@ on:
       orders_run_id:
         description: create-orders run ID whose results artifact to pull (for from_results across runs)
         required: false
+        default: ''
       concurrency:
         description: Parallel workers
         required: false
