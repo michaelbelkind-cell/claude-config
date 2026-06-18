@@ -1,0 +1,20 @@
+{
+  "name": "glbe-order-tool",
+  "version": "0.1.0",
+  "description": "Internal CLI tool to bulk-create GLBE orders and returns (RMAs) against QA.",
+  "type": "module",
+  "bin": {
+    "glbe-order-tool": "bin/cli.js"
+  },
+  "scripts": {
+    "start": "node bin/cli.js",
+    "create-orders": "node bin/cli.js create-orders",
+    "create-returns": "node bin/cli.js create-returns"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  }
+}

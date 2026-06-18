@@ -1,0 +1,1 @@
+timestamp,env,merchantId,merchantGuid,productCode,country,orderedQuantity,deliveryQuantity,orderId,returned,rmaNumber,rmaTracking,ok,error,returnError
