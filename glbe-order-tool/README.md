@@ -51,6 +51,36 @@ Same as above, then creates a return (RMA) for each successful order.
 node bin/cli.js create-orders --merchant 275 --product 701644329402M --count 3 --with-returns
 ```
 
+### High-volume runs (e.g. 50,000 orders)
+
+The tool is built for large, unstable-environment runs:
+
+- **`--concurrency <n>`** — parallel workers (default 1). Start at 10–25 on QA.
+- **Retries + backoff** on timeouts/5xx/network errors (`--retries`, `--timeout`).
+- **Crash-safe**: every order/return is written to `results/` immediately, so an
+  interrupted run keeps everything completed so far.
+- **Circuit breaker**: aborts after N consecutive order failures (`--max-consecutive-failures`, default 50).
+- **Graceful stop**: Ctrl+C finishes in-flight work then stops (Ctrl+C twice = force quit).
+- **Live progress** with rate + ETA.
+
+**Recommended pattern for big runs WITH returns — two phases.** Returns lag behind
+the "delivered" status under load (QA eventual consistency, up to ~2 min), so don't
+make every worker block on it. Instead:
+
+```bash
+# Phase 1 — create all orders fast (no returns)
+node bin/cli.js create-orders --merchant 524 --product 701644329402M --count 50000 --concurrency 20
+
+# Phase 2 — later, return everything still pending (orders have settled, so this is fast)
+node bin/cli.js create-returns --merchant 524 --product 701644329402M --from-results --concurrency 20
+```
+
+`--from-results` reads orders from `results/` that were created but not yet returned
+(filtered to `--merchant`), so it's safe to re-run until nothing is pending.
+
+For smaller runs, inline `--with-returns` is fine — it retries the return through
+the eligibility lag automatically (`--return-retries`, `--return-delay`).
+
 ### Other examples
 
 Different ordered vs delivery quantity:

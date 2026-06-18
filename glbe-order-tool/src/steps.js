@@ -1,15 +1,17 @@
 // One function per API call in the order/RMA lifecycle. Each takes the loaded
 // config plus the params it needs, and returns the value the next step consumes.
+// The trailing `reqOpts` ({ timeoutMs, retries }) is forwarded to the HTTP client.
 
 import { request } from './client.js';
 import { buildTemplatePayload } from '../data/payloadTemplate.js';
 
 // 1. Look up a merchant's GUID from its return-configuration.
-export async function getMerchantGuid(config, merchantId) {
+export async function getMerchantGuid(config, merchantId, reqOpts = {}) {
   const url = `${config.connectBase}/api/v1/merchants/return-configuration`;
   const data = await request('POST', url, {
     headers: { AuthToken: config.authToken, 'Content-Type': 'application/json' },
     body: { MerchantIds: [Number(merchantId)] },
+    ...reqOpts,
   });
 
   const configs = data?.MerchantConfigurations || {};
@@ -24,7 +26,7 @@ export async function getMerchantGuid(config, merchantId) {
 }
 
 // 2. Build the order template; returns the full response used as the order body.
-export async function createTemplate(config, params) {
+export async function createTemplate(config, params, reqOpts = {}) {
   const url = `${config.orderCreationBase}/Template`;
   return request('POST', url, {
     headers: {
@@ -33,11 +35,14 @@ export async function createTemplate(config, params) {
       'Content-Type': 'application/json-patch+json',
     },
     body: buildTemplatePayload(params),
+    ...reqOpts,
   });
 }
 
 // 3. Create the order from the template response; returns the new OrderId.
-export async function createOrder(config, templateResponse) {
+// NOTE: order creation is NOT idempotent, so we never retry it on a timeout-body
+// (a duplicate order could be created). Network/5xx retries still apply.
+export async function createOrder(config, templateResponse, reqOpts = {}) {
   const url = `${config.orderCreationBase}/Orders`;
   const data = await request('POST', url, {
     headers: {
@@ -46,6 +51,8 @@ export async function createOrder(config, templateResponse) {
       'Content-Type': 'application/json-patch+json',
     },
     body: templateResponse,
+    ...reqOpts,
+    retryOnTimeoutBody: false,
   });
   const orderId = data?.OrderId;
   if (!orderId) throw new Error('No OrderId in create-order response');
@@ -53,7 +60,11 @@ export async function createOrder(config, templateResponse) {
 }
 
 // 4. Create the parcel fulfilment / shipping documents.
-export async function fulfillParcel(config, { orderId, productCode, deliveryQuantity, merchantGuid }) {
+export async function fulfillParcel(
+  config,
+  { orderId, productCode, deliveryQuantity, merchantGuid },
+  reqOpts = {},
+) {
   const url = `${config.connectBase}/Order/GetShippingDocuments?merchantGUID=${encodeURIComponent(
     merchantGuid,
   )}`;
@@ -65,11 +76,16 @@ export async function fulfillParcel(config, { orderId, productCode, deliveryQuan
         { ParcelCode: 'P1', Products: [{ ProductCode: productCode, DeliveryQuantity: deliveryQuantity }] },
       ],
     },
+    ...reqOpts,
   });
 }
 
 // 5/7. Update order status (status is passed as a JSON-encoded query param).
-export async function updateOrderStatus(config, { orderId, merchantGuid, statusCode, name }) {
+export async function updateOrderStatus(
+  config,
+  { orderId, merchantGuid, statusCode, name },
+  reqOpts = {},
+) {
   const status = JSON.stringify({
     OrderId: orderId,
     OrderStatus: { OrderStatusCode: statusCode, Name: name },
@@ -78,17 +94,18 @@ export async function updateOrderStatus(config, { orderId, merchantGuid, statusC
     `${config.connectBase}/Order/UpdateOrderStatus` +
     `?MerchantGUID=${encodeURIComponent(merchantGuid)}` +
     `&orderStatus=${encodeURIComponent(status)}`;
-  return request('POST', url, { headers: { 'Content-Type': 'application/json' } });
+  return request('POST', url, { headers: { 'Content-Type': 'application/json' }, ...reqOpts });
 }
 
 // 6. Dispatch one or more orders.
-export async function dispatchOrders(config, { orderIds, merchantGuid }) {
+export async function dispatchOrders(config, { orderIds, merchantGuid }, reqOpts = {}) {
   const url = `${config.connectBase}/Order/DispatchOrders?merchantGUID=${encodeURIComponent(
     merchantGuid,
   )}`;
   return request('POST', url, {
     headers: { 'Content-Type': 'application/json' },
     body: { OrderIds: orderIds },
+    ...reqOpts,
   });
 }
 
@@ -105,6 +122,7 @@ export async function createReturn(
     shippingCost = 15.0,
     currencyCode = 'USD',
   },
+  reqOpts = {},
 ) {
   const url = `${config.connectBase}/Return/GetReturnDocuments?merchantGUID=${encodeURIComponent(
     merchantGuid,
@@ -130,5 +148,6 @@ export async function createReturn(
         },
       ],
     },
+    ...reqOpts,
   });
 }

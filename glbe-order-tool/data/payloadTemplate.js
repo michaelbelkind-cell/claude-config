@@ -5,9 +5,15 @@
 // NOTE: WebStoreCode, WebStoreInstanceCode (zymi), rateData and MerchantCartHash
 // were tested against QA and found NOT required for order creation, so they were
 // removed. If a future merchant/store needs them, reintroduce as parameters.
+//
+// IMPORTANT: MerchantCartToken defaults to a UNIQUE value per call. The original
+// collection used a fixed token, but concurrent orders sharing one token race on
+// the backend cart and produce orders that are not return-eligible.
+import { randomBytes } from 'node:crypto';
 
 export function buildTemplatePayload({
   merchantId,
+  merchantCartToken = randomBytes(13).toString('hex'),
   productCode = '701644329402M',
   productName = 'Sleeveless Pleated Top.',
   productDescription = 'Update your wardrobe with this sleeveless pleated shirt.',
@@ -126,7 +132,7 @@ export function buildTemplatePayload({
         },
       ],
       CartToken: null,
-      MerchantCartToken: 'ebb755feb249f6a7ccdb24f7bb',
+      MerchantCartToken: merchantCartToken,
       MerchantCartSnapShot: JSON.stringify({
         products: [{ position: '1', pid: productCode, qty: orderedQuantity }],
       }),
