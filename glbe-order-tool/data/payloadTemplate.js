@@ -1,19 +1,15 @@
 // Builds the body for POST /Template, mirroring the Postman "Create Template"
-// request. Only the fields a caller is likely to vary are parameterized; the
-// rest are sensible QA defaults lifted from the original collection.
-//
-// NOTE: WebStoreCode, WebStoreInstanceCode (zymi), rateData and MerchantCartHash
-// were tested against QA and found NOT required for order creation, so they were
-// removed. If a future merchant/store needs them, reintroduce as parameters.
-//
-// IMPORTANT: MerchantCartToken defaults to a UNIQUE value per call. The original
-// collection used a fixed token, but concurrent orders sharing one token race on
-// the backend cart and produce orders that are not return-eligible.
-import { randomBytes } from 'node:crypto';
+// request EXACTLY — same fields and same fixed values as the known-good
+// collection. (We previously stripped WebStoreCode/WebStoreInstanceCode/rateData/
+// MerchantCartHash and randomized the cart token; those orders created fine in
+// Global-e but didn't reliably sync into ReturnGo. Mimicking Postman is the
+// proven-good baseline. MerchantCartToken + MerchantCartHash are a matched pair,
+// so they're kept together as the original fixed values.)
 
 export function buildTemplatePayload({
   merchantId,
-  merchantCartToken = randomBytes(13).toString('hex'),
+  merchantCartToken = 'ebb755feb249f6a7ccdb24f7bb',
+  merchantCartHash = 'QIG79EXk0sVCbZZUE7wYWUNLaPWbFalytYsvDNk/fIc=',
   productCode = '701644329402M',
   productName = 'Sleeveless Pleated Top.',
   productDescription = 'Update your wardrobe with this sleeveless pleated shirt.',
@@ -133,6 +129,7 @@ export function buildTemplatePayload({
       ],
       CartToken: null,
       MerchantCartToken: merchantCartToken,
+      MerchantCartHash: merchantCartHash,
       MerchantCartSnapShot: JSON.stringify({
         products: [{ position: '1', pid: productCode, qty: orderedQuantity }],
       }),
@@ -180,6 +177,9 @@ export function buildTemplatePayload({
       },
       VoucherData: null,
       LoyaltyData: null,
+      rateData: '2et%2bc1mHFPISKf3TJ8CsYjuMCgdFC%2buEiWJUT56YaEs%3d',
+      WebStoreCode: 'SFRA-USD-QA-275',
+      WebStoreInstanceCode: 'zymi-007.dx.commercecloud.salesforce.com',
       LoyaltyPoints: null,
       AllowMailsFromMerchant: false,
       AllowDirectCommunicationFromMerchant: false,

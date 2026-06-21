@@ -28,9 +28,13 @@ on:
         required: false
         default: ''
       concurrency:
-        description: Parallel workers
+        description: Parallel workers (keep at 1 to match the paced, known-good flow)
         required: false
-        default: '10'
+        default: '1'
+      delay:
+        description: Delay between requests in ms
+        required: false
+        default: '2000'
       runner:
         description: Runner — MUST be self-hosted (QA is on a private 10.x network; hosted runners cannot reach it)
         type: choice
@@ -85,19 +89,22 @@ jobs:
           IN_ORDERS: ${{ inputs.orders }}
           IN_FROM_RESULTS: ${{ inputs.from_results }}
           IN_CONCURRENCY: ${{ inputs.concurrency }}
+          IN_DELAY: ${{ inputs.delay }}
         run: |
           if [ "$IN_FROM_RESULTS" = "true" ]; then
             node bin/cli.js create-returns \
               --merchant "$IN_MERCHANT" \
               --product "$IN_PRODUCT" \
               --from-results \
-              --concurrency "$IN_CONCURRENCY"
+              --concurrency "$IN_CONCURRENCY" \
+              --delay "$IN_DELAY"
           elif [ -n "$IN_ORDERS" ]; then
             node bin/cli.js create-returns \
               --merchant "$IN_MERCHANT" \
               --product "$IN_PRODUCT" \
               --orders "$IN_ORDERS" \
-              --concurrency "$IN_CONCURRENCY"
+              --concurrency "$IN_CONCURRENCY" \
+              --delay "$IN_DELAY"
           else
             echo "Provide 'orders' (comma-separated IDs) or enable 'from_results'." >&2
             exit 1

@@ -59,7 +59,8 @@ create-returns options:
                                 (ok + not yet returned, filtered to --merchant)
 
 high-volume / robustness options (both commands):
-  --concurrency <n>             parallel workers (default 1; try 10-25 for big runs)
+  --concurrency <n>             parallel workers (default 1 = sequential, like Postman)
+  --delay <ms>                  delay between requests (default 2000; paces QA so orders sync to ReturnGo)
   --retries <n>                 retries per failed request (default 4)
   --timeout <ms>                per-request timeout in ms (default 60000)
   --return-retries <n>          retries for return eligibility lag (default 10)
@@ -91,11 +92,14 @@ async function main() {
   console.log(`Environment: ${config.envName}`);
 
   // Shared robustness settings.
+  // Defaults mimic the known-good Postman flow: sequential (concurrency 1) and a
+  // 2000ms delay between requests, which lets QA sync each order into ReturnGo.
   const concurrency = Number(args.concurrency ?? 1);
   const reqOpts = {
     retries: Number(args.retries ?? 4),
     timeoutMs: Number(args.timeout ?? 60000),
     retryOnTimeoutBody: true, // retry QA "Execution Timeout Expired" bodies (createOrder opts out)
+    delayMs: Number(args.delay ?? 2000),
   };
   // Returns lag behind the "delivered" status under load (QA eventual consistency,
   // observed up to ~2 min). Default to a patient retry window.
@@ -144,9 +148,12 @@ async function main() {
     const orderedQuantity = Number(args['ordered-qty'] ?? args.qty ?? 2);
     const deliveryQuantity = Number(args['delivery-qty'] ?? args.qty ?? 2);
 
-    if (count > 100 && concurrency === 1) {
+    if (count > 100) {
+      const perOrderSec = 7 * (reqOpts.delayMs / 1000) + 10; // ~7 paced steps + processing
+      const estMin = Math.round((count * perOrderSec) / Math.max(1, concurrency) / 60);
       console.warn(
-        `⚠️  ${count} orders at --concurrency 1 will be slow. Consider --concurrency 10-25.`,
+        `⚠️  ${count} orders, concurrency ${concurrency}, delay ${reqOpts.delayMs}ms ≈ ~${estMin} min. ` +
+          `Pacing is intentional so orders sync to ReturnGo — raising concurrency/lowering delay risks RGO sync misses.`,
       );
     }
 

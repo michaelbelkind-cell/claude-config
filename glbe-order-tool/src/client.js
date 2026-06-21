@@ -18,7 +18,14 @@ const RETRYABLE_CODES = [
 ];
 
 export async function request(method, url, opts = {}) {
-  const { headers = {}, body, timeoutMs = 60000, retries = 4, retryOnTimeoutBody = false } = opts;
+  const {
+    headers = {},
+    body,
+    timeoutMs = 60000,
+    retries = 4,
+    retryOnTimeoutBody = false,
+    delayMs = 0,
+  } = opts;
   const payload =
     body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body);
   const debug = process.env.GLBE_DEBUG === 'true';
@@ -62,6 +69,9 @@ export async function request(method, url, opts = {}) {
         const snippet = typeof data === 'string' ? data : JSON.stringify(data);
         console.log(`    data: ${(snippet || '(empty)').slice(0, 300)}`);
       }
+      // Pace requests (mimics Postman Runner's inter-request delay). Gives the QA
+      // backend time to process each step and sync the order into ReturnGo.
+      if (delayMs > 0) await sleep(delayMs);
       return data;
     } catch (err) {
       if (attempt <= retries && isRetryableError(err)) {

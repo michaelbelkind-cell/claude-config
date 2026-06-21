@@ -21,9 +21,13 @@ on:
         required: false
         default: '1'
       concurrency:
-        description: Parallel workers (try 10-20; tune to what QA tolerates)
+        description: Parallel workers (keep at 1 — pacing, not parallelism, is what makes orders sync to ReturnGo)
         required: false
-        default: '10'
+        default: '1'
+      delay:
+        description: Delay between requests in ms (paces QA so orders sync to ReturnGo)
+        required: false
+        default: '2000'
       country:
         description: Destination country code
         required: false
@@ -71,6 +75,7 @@ jobs:
           IN_COUNT: ${{ inputs.count }}
           IN_QTY: ${{ inputs.qty }}
           IN_CONCURRENCY: ${{ inputs.concurrency }}
+          IN_DELAY: ${{ inputs.delay }}
           IN_COUNTRY: ${{ inputs.country }}
           IN_WITH_RETURNS: ${{ inputs.with_returns }}
         run: |
@@ -82,6 +87,7 @@ jobs:
             --count "$IN_COUNT" \
             --qty "$IN_QTY" \
             --concurrency "$IN_CONCURRENCY" \
+            --delay "$IN_DELAY" \
             --country "$IN_COUNTRY" \
             $EXTRA
 
