@@ -1,15 +1,18 @@
 // Builds the body for POST /Template, mirroring the Postman "Create Template"
-// request EXACTLY — same fields and same fixed values as the known-good
-// collection. (We previously stripped WebStoreCode/WebStoreInstanceCode/rateData/
-// MerchantCartHash and randomized the cart token; those orders created fine in
-// Global-e but didn't reliably sync into ReturnGo. Mimicking Postman is the
-// proven-good baseline. MerchantCartToken + MerchantCartHash are a matched pair,
-// so they're kept together as the original fixed values.)
+// request, with one deliberate difference: MerchantCartToken is UNIQUE per order.
+//
+// Postman reuses a fixed cart token but works because each Runner iteration has its
+// own Cloudflare cookie session, keeping carts isolated. Our fetch-based tool has
+// no cookie jar, so a reused token collides across orders and only the LAST order
+// of a batch survives into ReturnGo (earlier ones 404). A unique token per order
+// makes every order a distinct cart. MerchantCartHash is omitted: it's a hash of
+// the original fixed cart, so it can't be valid for a fresh unique cart (order
+// creation works without it).
+import { randomBytes } from 'node:crypto';
 
 export function buildTemplatePayload({
   merchantId,
-  merchantCartToken = 'ebb755feb249f6a7ccdb24f7bb',
-  merchantCartHash = 'QIG79EXk0sVCbZZUE7wYWUNLaPWbFalytYsvDNk/fIc=',
+  merchantCartToken = randomBytes(13).toString('hex'),
   productCode = '701644329402M',
   productName = 'Sleeveless Pleated Top.',
   productDescription = 'Update your wardrobe with this sleeveless pleated shirt.',
@@ -129,7 +132,6 @@ export function buildTemplatePayload({
       ],
       CartToken: null,
       MerchantCartToken: merchantCartToken,
-      MerchantCartHash: merchantCartHash,
       MerchantCartSnapShot: JSON.stringify({
         products: [{ position: '1', pid: productCode, qty: orderedQuantity }],
       }),
