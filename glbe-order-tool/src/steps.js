@@ -65,7 +65,7 @@ export async function fulfillParcel(
   { orderId, productCode, deliveryQuantity, merchantGuid },
   reqOpts = {},
 ) {
-  const url = `${config.connectBase}/Order/GetShippingDocuments?merchantGUID=${encodeURIComponent(
+  const url = `${config.connectBaseHttp}/Order/GetShippingDocuments?merchantGUID=${encodeURIComponent(
     merchantGuid,
   )}`;
   return request('POST', url, {
@@ -91,7 +91,7 @@ export async function updateOrderStatus(
     OrderStatus: { OrderStatusCode: statusCode, Name: name },
   });
   const url =
-    `${config.connectBase}/Order/UpdateOrderStatus` +
+    `${config.connectBaseHttp}/Order/UpdateOrderStatus` +
     `?MerchantGUID=${encodeURIComponent(merchantGuid)}` +
     `&orderStatus=${encodeURIComponent(status)}`;
   return request('POST', url, { headers: { 'Content-Type': 'application/json' }, ...reqOpts });
@@ -99,7 +99,7 @@ export async function updateOrderStatus(
 
 // 6. Dispatch one or more orders.
 export async function dispatchOrders(config, { orderIds, merchantGuid }, reqOpts = {}) {
-  const url = `${config.connectBase}/Order/DispatchOrders?merchantGUID=${encodeURIComponent(
+  const url = `${config.connectBaseHttp}/Order/DispatchOrders?merchantGUID=${encodeURIComponent(
     merchantGuid,
   )}`;
   return request('POST', url, {

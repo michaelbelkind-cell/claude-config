@@ -33,5 +33,9 @@ export function loadConfig() {
   if (!authToken) throw new Error('Missing GLBE_AUTH_TOKEN (set it in .env).');
   if (!apiKey) throw new Error('Missing GLBE_API_KEY (set it in .env).');
 
-  return { envName, ...env, authToken, apiKey };
+  // Postman calls the Order/* connect endpoints over HTTP (fulfil/status/dispatch),
+  // while return-configuration and Return use HTTPS. Mirror that exactly.
+  const connectBaseHttp = env.connectBase.replace(/^https:/, 'http:');
+
+  return { envName, ...env, connectBaseHttp, authToken, apiKey };
 }
