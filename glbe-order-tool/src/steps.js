@@ -116,7 +116,7 @@ export async function createReturn(
     orderId,
     productCode,
     merchantGuid,
-    email = 'Automation.Bot@gmail.com',
+    email = 'michael.belkind@returngo.ai',
     merchantRmaNumber,
     returnQuantity = 1,
     shippingCost = 15.0,

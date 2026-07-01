@@ -51,7 +51,7 @@ create-orders options:
   --country <code>              destination country code (default DE)
   --currency <code>             currency code (default EUR)
   --with-returns                create a return (RMA) for each successful order
-  --email <addr>                email for returns (default Automation.Bot@gmail.com)
+  --email <addr>                email for returns (default michael.belkind@returngo.ai)
 
 create-returns options:
   --orders <id1,id2,...>        comma-separated order ids
