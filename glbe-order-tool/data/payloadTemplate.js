@@ -26,6 +26,7 @@ export function buildTemplatePayload({
   orderedQuantity = 2,
   deliveryQuantity = 2,
   merchantOrderId = '00000101',
+  email = 'michael.belkind@returngo.ai',
 } = {}) {
   if (merchantId === undefined || merchantId === null) {
     throw new Error('buildTemplatePayload: merchantId is required');
@@ -150,7 +151,7 @@ export function buildTemplatePayload({
             Phone1: null,
             Phone2: null,
             Fax: null,
-            Email: null,
+            Email: email,
             Company: null,
             Address1: null,
             Address2: null,
