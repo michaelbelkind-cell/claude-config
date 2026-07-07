@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node bin/cli.js",
     "create-orders": "node bin/cli.js create-orders",
-    "create-returns": "node bin/cli.js create-returns"
+    "create-returns": "node bin/cli.js create-returns",
+    "sync-workflow-countries": "node scripts/sync-workflow-country-options.js"
   },
   "engines": {
     "node": ">=18"

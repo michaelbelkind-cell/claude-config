@@ -9,6 +9,7 @@
 // the original fixed cart, so it can't be valid for a fresh unique cart (order
 // creation works without it).
 import { randomBytes } from 'node:crypto';
+import { DEFAULT_BILLING_COUNTRY, resolveBillingCountryId } from './countries.js';
 
 export function buildTemplatePayload({
   merchantId,
@@ -16,6 +17,7 @@ export function buildTemplatePayload({
   productCode = '701644329402M',
   productName = 'Sleeveless Pleated Top.',
   productDescription = 'Update your wardrobe with this sleeveless pleated shirt.',
+  billingCountry = DEFAULT_BILLING_COUNTRY,
   countryCode = 'DE',
   currencyCode = 'EUR',
   originalCurrencyCode = 'USD',
@@ -31,6 +33,8 @@ export function buildTemplatePayload({
   if (merchantId === undefined || merchantId === null) {
     throw new Error('buildTemplatePayload: merchantId is required');
   }
+
+  const billingCountryId = resolveBillingCountryId(billingCountry);
 
   return {
     sendCartRequest: {
@@ -195,7 +199,7 @@ export function buildTemplatePayload({
       merchantId: Number(merchantId),
       shippingMethodId: 0,
       billingData: {
-        countryId: 69,
+        countryId: billingCountryId,
         stateId: 0,
         city: null,
         zip: null,
