@@ -97,6 +97,20 @@ are completed in exact sequential order. NON-NEGOTIABLE. Zero exceptions.
 
 ---
 
+## CRITICAL PROTOCOL: DEDICATED BRANCHES
+
+- New feature work in this repo starts on a dedicated branch created from the latest `dev` (`git fetch origin && git checkout -b feature/<name> origin/dev`). PRs for the feature go into that branch; it is merged into `dev` once, when the user says it is ready.
+- PRs into a dedicated branch, and syncs of `dev` into it, use "Create a merge commit" — never squash.
+
+### `feature/automation-coverage` — automation coverage skill
+- Everything for the `/automation-coverage` skill and the `coverage-gaps/` folder (coverage list, scanner, dashboard, roadmaps, plan) is developed ONLY on `feature/automation-coverage`.
+- Each change: branch from `origin/feature/automation-coverage`, open the PR with base `feature/automation-coverage`, reviewer Liran. Never open a coverage PR into `dev`.
+- `coverage-gaps/` was removed from `dev` on purpose. Do not add it back to `dev` until the user says the skill is ready.
+- To sync `dev` into the branch or merge the branch into `dev`: follow `coverage-gaps/README.md` (merge `dev`, `git checkout HEAD -- coverage-gaps`, commit), otherwise coverage files can be deleted.
+- The scan reads the tests on `origin/dev` (run `git fetch` first); the branch only provides the coverage files.
+
+---
+
 ## CRITICAL PROTOCOL: ENVIRONMENT RULES
 
 - It is STRICTLY PROHIBITED to run tests against production without the user

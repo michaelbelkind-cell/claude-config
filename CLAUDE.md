@@ -33,8 +33,21 @@ This is NON-NEGOTIABLE. Zero exceptions.
 - `fix/xxx` — bug fixes (e.g. fix/order-sync-issue)
 - `hotfix/xxx` — urgent production fixes only
 
+### Dedicated feature branches (MANDATORY)
+- Every new feature starts on its own dedicated branch, created from the LATEST `dev`:
+  `git fetch origin` then `git checkout -b feature/<name> origin/dev` — never from an old local copy, never from another feature branch.
+- All work for that feature happens on its dedicated branch. Each change is a short-lived branch cut from the dedicated branch, with its PR into the dedicated branch — never into `dev`.
+- The dedicated branch is merged into `dev` once, only when the user says the feature is ready.
+- Syncing `dev` into a dedicated branch, and merging a PR into a dedicated branch, MUST use a merge commit ("Create a merge commit"), never squash — a squash drops the history link and the later merge into `dev` can lose files.
+
+### Active dedicated branches
+| Repo | Branch | Feature | Rule |
+|---|---|---|---|
+| automation | `feature/automation-coverage` | `/automation-coverage` skill and `coverage-gaps/` (coverage list, dashboard, roadmaps) | Work ONLY on this branch until the user says it is ready for `dev`. `coverage-gaps/` is not on `dev`; do not add it there. Before syncing with `dev` or merging into `dev`, follow `coverage-gaps/README.md` (merge `dev`, `git checkout HEAD -- coverage-gaps`, commit). |
+
 ### Strictly Prohibited
 - It is STRICTLY PROHIBITED to commit directly to `main` or `develop`
+- It is STRICTLY PROHIBITED to start a new feature on `dev` or on an existing branch — create its dedicated branch from the latest `dev` first
 - It is STRICTLY PROHIBITED to force push to any branch
 - It is STRICTLY PROHIBITED to merge your own PR without review
 - It is STRICTLY PROHIBITED to work on multiple repos in the same session
